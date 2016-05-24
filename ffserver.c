@@ -2042,6 +2042,8 @@ static void compute_status(HTTPContext *c)
                         if (*audio_codec_name)
                             audio_codec_name_extra = "...";
                         audio_codec_name = codec->name;
+                    } else if (config.audio_stream_copy) {
+                        audio_codec_name = "(copy)";
                     }
                     break;
                 case AVMEDIA_TYPE_VIDEO:
@@ -2050,6 +2052,8 @@ static void compute_status(HTTPContext *c)
                         if (*video_codec_name)
                             video_codec_name_extra = "...";
                         video_codec_name = codec->name;
+                    } else if (config.video_stream_copy) {
+                        video_codec_name = "(copy)";
                     }
                     break;
                 case AVMEDIA_TYPE_DATA:

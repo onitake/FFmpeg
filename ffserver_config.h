@@ -140,6 +140,8 @@ typedef struct FFServerConfig {
     int no_video;
     int line_num;
     int stream_use_defaults;
+    int video_stream_copy;
+    int audio_stream_copy;
 } FFServerConfig;
 
 void ffserver_get_arg(char *buf, int buf_size, const char **pp);

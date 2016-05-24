@@ -336,10 +336,23 @@ static int ffserver_set_codec(AVCodecContext *ctx, const char *codec_name,
     int ret;
     AVCodec *codec = avcodec_find_encoder_by_name(codec_name);
     if (!codec || codec->type != ctx->codec_type) {
-        report_config_error(config->filename, config->line_num, AV_LOG_ERROR,
-                            &config->errors,
-                            "Invalid codec name: '%s'\n", codec_name);
-        return 0;
+        if (!strcmp(codec_name, "copy")) {
+            if (ctx->codec_type = AVMEDIA_TYPE_VIDEO) {
+                config->video_stream_copy = 1;
+            } else if (ctx->codec_type = AVMEDIA_TYPE_AUDIO) {
+                config->audio_stream_copy = 1;
+            } else {
+                report_config_error(config->filename, config->line_num, AV_LOG_WARNING,
+                                    &config->errors,
+                                    "Unknown codec type: '%s'\n", codec_name);
+            }
+            return 0;
+        } else {
+            report_config_error(config->filename, config->line_num, AV_LOG_ERROR,
+                                &config->errors,
+                                "Invalid codec name: '%s'\n", codec_name);
+            return 0;
+        }
     }
     if (ctx->codec_id == AV_CODEC_ID_NONE && !ctx->priv_data) {
         if ((ret = avcodec_get_context_defaults3(ctx, codec)) < 0)
