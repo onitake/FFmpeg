@@ -337,9 +337,9 @@ static int ffserver_set_codec(AVCodecContext *ctx, const char *codec_name,
     AVCodec *codec = avcodec_find_encoder_by_name(codec_name);
     if (!codec || codec->type != ctx->codec_type) {
         if (!strcmp(codec_name, "copy")) {
-            if (ctx->codec_type = AVMEDIA_TYPE_VIDEO) {
+            if (ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
                 config->video_stream_copy = 1;
-            } else if (ctx->codec_type = AVMEDIA_TYPE_AUDIO) {
+            } else if (ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
                 config->audio_stream_copy = 1;
             } else {
                 report_config_error(config->filename, config->line_num, AV_LOG_WARNING,
@@ -1137,14 +1137,14 @@ static int ffserver_parse_config_stream(FFServerConfig *config, const char *cmd,
     } else if (!av_strcasecmp(cmd, "</Stream>")) {
         config->stream_use_defaults &= 1;
         if (stream->feed && stream->fmt && strcmp(stream->fmt->name, "ffm")) {
-            if (config->dummy_actx->codec_id == AV_CODEC_ID_NONE)
+            if (config->dummy_actx->codec_id == AV_CODEC_ID_NONE && !config->audio_stream_copy)
                 config->dummy_actx->codec_id = config->guessed_audio_codec_id;
             if (!config->no_audio &&
                 config->dummy_actx->codec_id != AV_CODEC_ID_NONE) {
                 AVCodecContext *audio_enc = avcodec_alloc_context3(avcodec_find_encoder(config->dummy_actx->codec_id));
                 add_codec(stream, audio_enc, config);
             }
-            if (config->dummy_vctx->codec_id == AV_CODEC_ID_NONE)
+            if (config->dummy_vctx->codec_id == AV_CODEC_ID_NONE && !config->video_stream_copy)
                 config->dummy_vctx->codec_id = config->guessed_video_codec_id;
             if (!config->no_video &&
                 config->dummy_vctx->codec_id != AV_CODEC_ID_NONE) {
