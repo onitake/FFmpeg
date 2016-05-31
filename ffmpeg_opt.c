@@ -1921,19 +1921,29 @@ static int read_ffserver_streams(OptionsContext *o, AVFormatContext *s, const ch
         AVCodec *codec;
         const char *enc_config;
 
-        codec = avcodec_find_encoder(ic->streams[i]->codecpar->codec_id);
-        if (!codec) {
-            av_log(s, AV_LOG_ERROR, "no encoder found for codec id %i\n", ic->streams[i]->codecpar->codec_id);
-            return AVERROR(EINVAL);
-        }
-        if (codec->type == AVMEDIA_TYPE_AUDIO)
-            opt_audio_codec(o, "c:a", codec->name);
-        else if (codec->type == AVMEDIA_TYPE_VIDEO)
-            opt_video_codec(o, "c:v", codec->name);
-        ost   = new_output_stream(o, s, codec->type, -1);
-        st    = ost->st;
+        if (ic->streams[i]->codec->codec_id != AV_CODEC_ID_NONE) {
+            codec = avcodec_find_encoder(ic->streams[i]->codec->codec_id);
+            if (!codec) {
+                av_log(s, AV_LOG_ERROR, "no encoder found for codec id %i\n", ic->streams[i]->codecpar->codec_id);
+                return AVERROR(EINVAL);
+            }
+            if (codec->type == AVMEDIA_TYPE_AUDIO)
+                opt_audio_codec(o, "c:a", codec->name);
+            else if (codec->type == AVMEDIA_TYPE_VIDEO)
+                opt_video_codec(o, "c:v", codec->name);
+            ost   = new_output_stream(o, s, codec->type, -1);
+            st    = ost->st;
 
-        avcodec_get_context_defaults3(st->codec, codec);
+            avcodec_get_context_defaults3(st->codec, codec);
+        } else {
+            if (ic->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+                opt_audio_codec(o, "c:a", "copy");
+            else if (ic->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+                opt_video_codec(o, "c:v", "copy");
+            ost   = new_output_stream(o, s, ic->streams[i]->codec->codec_type, -1);
+            st    = ost->st;
+        }
+
         enc_config = av_stream_get_recommended_encoder_configuration(ic->streams[i]);
         if (enc_config) {
             AVDictionary *opts = NULL;

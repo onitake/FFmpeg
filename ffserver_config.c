@@ -1139,16 +1139,26 @@ static int ffserver_parse_config_stream(FFServerConfig *config, const char *cmd,
         if (stream->feed && stream->fmt && strcmp(stream->fmt->name, "ffm")) {
             if (config->dummy_actx->codec_id == AV_CODEC_ID_NONE && !config->audio_stream_copy)
                 config->dummy_actx->codec_id = config->guessed_audio_codec_id;
-            if (!config->no_audio &&
-                config->dummy_actx->codec_id != AV_CODEC_ID_NONE) {
-                AVCodecContext *audio_enc = avcodec_alloc_context3(avcodec_find_encoder(config->dummy_actx->codec_id));
+            if (!config->no_audio) {
+                AVCodecContext *audio_enc;
+                if (config->dummy_actx->codec_id != AV_CODEC_ID_NONE) {
+                    audio_enc = avcodec_alloc_context3(avcodec_find_encoder(config->dummy_actx->codec_id));
+                } else {
+                    audio_enc = avcodec_alloc_context3(NULL);
+                    audio_enc->codec_type = AVMEDIA_TYPE_AUDIO;
+                }
                 add_codec(stream, audio_enc, config);
             }
             if (config->dummy_vctx->codec_id == AV_CODEC_ID_NONE && !config->video_stream_copy)
                 config->dummy_vctx->codec_id = config->guessed_video_codec_id;
-            if (!config->no_video &&
-                config->dummy_vctx->codec_id != AV_CODEC_ID_NONE) {
-                AVCodecContext *video_enc = avcodec_alloc_context3(avcodec_find_encoder(config->dummy_vctx->codec_id));
+            if (!config->no_video) {
+                AVCodecContext *video_enc;
+                if (config->dummy_vctx->codec_id != AV_CODEC_ID_NONE) {
+                    video_enc = avcodec_alloc_context3(avcodec_find_encoder(config->dummy_vctx->codec_id));
+                } else {
+                    video_enc = avcodec_alloc_context3(config->dummy_vctx->codec);
+                    video_enc->codec_type = AVMEDIA_TYPE_VIDEO;
+                }
                 add_codec(stream, video_enc, config);
             }
         }

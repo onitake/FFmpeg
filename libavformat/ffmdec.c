@@ -341,21 +341,26 @@ static int ffm2_read_header(AVFormatContext *s)
             codecpar = st->codecpar;
             /* generic info */
             codecpar->codec_id = avio_rb32(pb);
-            codec_desc = avcodec_descriptor_get(codecpar->codec_id);
-            if (!codec_desc) {
-                av_log(s, AV_LOG_ERROR, "Invalid codec id: %d\n", codecpar->codec_id);
-                codecpar->codec_id = AV_CODEC_ID_NONE;
+            if (codecpar->codec_id != AV_CODEC_ID_NONE) {
+                codec_desc = avcodec_descriptor_get(codecpar->codec_id);
+                if (!codec_desc) {
+                    av_log(s, AV_LOG_ERROR, "Invalid codec id: %d\n", codecpar->codec_id);
+                    codecpar->codec_id = AV_CODEC_ID_NONE;
                 ret = AVERROR_INVALIDDATA;
-                goto fail;
-            }
-            codecpar->codec_type = avio_r8(pb);
-            if (codecpar->codec_type != codec_desc->type) {
-                av_log(s, AV_LOG_ERROR, "Codec type mismatch: expected %d, found %d\n",
-                       codec_desc->type, codecpar->codec_type);
-                codecpar->codec_id = AV_CODEC_ID_NONE;
-                codecpar->codec_type = AVMEDIA_TYPE_UNKNOWN;
+                    goto fail;
+                }
+                codecpar->codec_type = avio_r8(pb);
+                if (codecpar->codec_type != codec_desc->type) {
+                    av_log(s, AV_LOG_ERROR, "Codec type mismatch: expected %d, found %d\n",
+                        codec_desc->type, codecpar->codec_type);
+                    codecpar->codec_id = AV_CODEC_ID_NONE;
+                    codecpar->codec_type = AVMEDIA_TYPE_UNKNOWN;
                 ret = AVERROR_INVALIDDATA;
-                goto fail;
+                    goto fail;
+                }
+            } else {
+                /* no codec ID - stream copying */
+                codecpar->codec_type = avio_r8(pb);
             }
             codecpar->bit_rate = avio_rb32(pb);
             if (codecpar->bit_rate < 0) {
