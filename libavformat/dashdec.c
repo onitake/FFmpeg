@@ -1396,7 +1396,7 @@ static int64_t calc_cur_seg_no(AVFormatContext *s, struct representation *pls)
             else
                 num += pls->first_seq_no;
         } else if (pls->fragment_duration){
-            av_log(s, AV_LOG_TRACE, "in fragment_duration mode fragment_timescale = %"PRId64", presentation_timeoffset = %"PRId64"\n", pls->fragment_timescale, pls->presentation_timeoffset);
+            av_log(s, AV_LOG_TRACE, "in fragment_duration mode fragment_timescale = %"PRId64", presentation_timeoffset = %"PRId64", fragment_duration = %"PRId64", first_seq_no = %"PRId64", availability_start_time = %"PRId64", availability_end_time = %"PRId64", publish_time = %"PRId64", time_shift_buffer_depth = %"PRId64", suggested_presentation_delay = %"PRId64", min_buffer_time = %"PRId64"\n", pls->fragment_timescale, pls->presentation_timeoffset, pls->fragment_duration, pls->first_seq_no, c->availability_start_time, c->availability_end_time, c->publish_time, c->time_shift_buffer_depth, c->suggested_presentation_delay, c->min_buffer_time);
             if (pls->presentation_timeoffset) {
                 num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration - c->min_buffer_time;
             } else {
