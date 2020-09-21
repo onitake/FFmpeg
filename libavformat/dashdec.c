@@ -1550,6 +1550,7 @@ static struct fragment *get_current_fragment(struct representation *pls)
             pls->cur_seq_no = calc_cur_seg_no(pls->parent, pls);
         } else if (pls->cur_seq_no > max_seq_no) {
             av_log(pls->parent, AV_LOG_VERBOSE, "new fragment: min[%"PRId64"] max[%"PRId64"], playlist %d\n", min_seq_no, max_seq_no, (int)pls->rep_idx);
+            pls->cur_seq_no = max_seq_no;
         }
         seg = av_mallocz(sizeof(struct fragment));
         if (!seg) {
